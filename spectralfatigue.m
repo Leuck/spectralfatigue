@@ -45,13 +45,13 @@ Sc(:,2) = S * (1-(Sm/Su)^2);    % Gerber
 
 %% Stress Range
 % No extrapolation, the stress range is given by the S-N curve
-Smax = max(Sc(:,criteria));
-Smin = min(Sc(:,criteria)); % fatigue limit
+Smax = 360;%max(Sc(:,criteria));
+Smin = 70;%min(Sc(:,criteria)); % fatigue limit
 CRS = linspace(Smin,Smax,500); % range for calculation
 
 %% Fatigue life estimation
 % Expected damage rate
-NF=Ncycles(N,Sc(:,criteria), CRS);
+NF=astm1008cycles(CRS);
 switch lower(pdf)
     case {'dirlik'}
         % Dirlik's PDF
@@ -66,7 +66,9 @@ switch lower(pdf)
         C2 = (1 - gamma - C1 + C1^2)/(1 - alpha);
         C3 = 1 - C1 - C2;
         tau = 1.25*(gamma - C3 - C2*alpha)/ C1;
-        PDF = (C1/tau.*exp(-CRS/2/sigmax./tau) + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2) + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) );
+        PDF = C1/tau.*exp(-CRS/2/sigmax./tau);
+        PDF = PDF + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2);
+        PDF = PDF + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) ;
 
         Ed = mu.*trapz( CRS, PDF./NF);
     case {'rayleigh'}
