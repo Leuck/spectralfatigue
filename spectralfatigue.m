@@ -91,25 +91,35 @@ end
 if showplots ~= 0
     % Plot time history
     figure;
-    subplot(2,2,1)
+    subplot(2,3,1)
     plot(sinal.t(1:300),sinal.ext(1:300));
     title('Time History Sample'); xlabel('Time, s'); ylabel('Stress, MPa')
     
     % Plot single-sided amplitude spectrum.
-    subplot(2,2,2)
+    subplot(2,3,2)
     plot(f,PSD_1sided) 
     title('Single-Sided Amplitude Spectrum of S(t)'); xlabel('Frequency, Hz')
     ylabel('|S(f)|, MPa')
     
     % Plot S-N Diagram
-    subplot(2,2,3)
-    semilogx(N,S,'*-',N,Sc(:,1),N,Sc(:,2)); xlabel('N, cycles'); ylabel('S, MPa')
-    title('S-N Curve'); legend('Zero Mean','Goodman','Gerber')
+    subplot(2,3,3)
+    semilogx(NF,CRS); xlabel('N, cycles'); ylabel('S, MPa')
+    title('S-N Curve'); legend('Zero Mean')
 
     % Plot Different PDF's
-    subplot(2,2,4)
+    subplot(2,3,4)
     plot(CRS, PDF)
     title(strcat({pdf},' PDF')); xlabel('\sigma, MPa'); ylabel('P')
+    
+    % Plot the life curve
+    subplot(2,3,5)
+    plot(CRS, NF)
+    title('Life Curve'); xlabel('\sigma, Mpa'); ylabel('N')
+    
+    % Plot the life curve
+    subplot(2,3,6)
+    plot(CRS, NF, CRS, mu*PDF)
+    title('integrands'); xlabel('\sigma, Mpa'); ylabel(''); legend('N','mu . PDF')
 end
 
 %% Expected Life

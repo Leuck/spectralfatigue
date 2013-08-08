@@ -6,8 +6,8 @@ sinal2 = load('sinal_campo.mat');
 t=linspace(0,20,20*1300)';
 teste1.t = t;
 teste2.t = t;
-teste1.ext=277.92/2*sin(2*pi*5*teste.t);
-teste2.ext=253.216/2*sin(2*pi*5*teste.t);
+teste1.ext=277.92/2*sin(2*pi*5*t);
+teste2.ext=253.216/2*sin(2*pi*5*t);
 
 sn = csvread('1006SN.txt');
 pdf = 'dirlik'; % usar dirlik, rayleigh, gauss ou narrow
