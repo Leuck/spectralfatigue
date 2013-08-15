@@ -1,7 +1,7 @@
 % Fatigue life estimate - spectral method
 % sn should be of the form [N S]
 % Ricardo Frederico Leuck Filho 2012/2-2013/1
-function Tf = spectrallife(psd,sn,criteria,pdf,showplots)
+function Tf = spectrallife(psd,sn,meanstress,criteria,pdf,showplots)
 % %% Options
 % criteria = 2; % Mean stress correction (1=Goodman, 2=Gerber, 3=sem correcao)
 % showplots = 0; % Show plots? 0=no, 1=yes
@@ -10,24 +10,27 @@ f = psd(:,1);
 PSD_1sided = psd(:,2);
 
 %% PSD moments
-frad=f*2*pi;
+frad=f;%*2*pi;
 % size(frad)
 m0 = trapz(frad, PSD_1sided);
 m1 = trapz(frad, frad .* PSD_1sided);
 m2 = trapz(frad, frad.^2 .* PSD_1sided);
 m4 = trapz(frad, frad.^4 .* PSD_1sided);
 fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
+umsigma = sqrt(m0)
 
 %% S-N curve with Mean Stress Correction
 N = sn(:,1);
 S = sn(:,2); clear sn;
 
-Sm = 1;	% mean stress
+Sm = meanstress;	% mean stress
 Su = max(S);
 if criteria == 1
     Sc = S * (1-Sm/Su);        % Goodman
+    fprintf('\nMean Stress Correction: Goodman')
 elseif criteria == 2    
     Sc = S * (1-(Sm/Su)^2);    % Gerber
+    fprintf('\nMean Stress Correction: Gerber')
 else
     Sc = S;
 end
@@ -77,19 +80,19 @@ end
 if showplots ~= 0
     % Plot single-sided amplitude spectrum.
     subplot(2,1,1)
-    plot(f,PSD_1sided) 
+    semilogy(f,PSD_1sided) 
     title('Single-Sided Amplitude Spectrum of S(t)'); xlabel('Frequency, Hz')
-    ylabel('|S(f)|, MPa')
+    ylabel('S(f)^2/f')
     
     % Plot S-N Diagram
     subplot(2,2,3)
-    semilogx(N,S,'*-',N,Sc,N,Sc); xlabel('N, cycles'); ylabel('S, MPa')
-    title('S-N Curve'); legend('Zero Mean','Goodman','Gerber')
+    semilogx(N,S,'*-',N,Sc,N,Sc); xlabel('N, cycles'); ylabel('S, Pa')
+    title('S-N Curve'); 
 
     % Plot Different PDF's
     subplot(2,2,4)
     plot(CRS, PDF)
-    title(strcat({pdf},' PDF')); xlabel('\sigma, MPa'); ylabel('P')
+    title(strcat({pdf},' PDF')); xlabel('\sigma, Pa'); ylabel('P')
 end
 
 %% Expected Life
