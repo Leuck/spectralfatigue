@@ -6,6 +6,8 @@ function Tf = spectrallife(psd,sn,meanstress,criteria,pdf,showplots)
 % criteria = 2; % Mean stress correction (1=Goodman, 2=Gerber, 3=sem correcao)
 % showplots = 0; % Show plots? 0=no, 1=yes
 
+nop = 200; % number of points for calculations
+
 f = psd(:,1);
 PSD_1sided = psd(:,2);
 
@@ -16,8 +18,8 @@ m0 = trapz(frad, PSD_1sided);
 m1 = trapz(frad, frad .* PSD_1sided);
 m2 = trapz(frad, frad.^2 .* PSD_1sided);
 m4 = trapz(frad, frad.^4 .* PSD_1sided);
-fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
-umsigma = sqrt(m0)
+%fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
+fprintf('\nRMS: %.4E\tIrr: %.4E\tPeaks: %.4E\n',sqrt(m0),sqrt((m2^2)/(m0*m4)),sqrt(m4/m2));
 
 %% S-N curve with Mean Stress Correction
 N = sn(:,1);
@@ -38,7 +40,7 @@ end
 % No extrapolation, the stress range is given by the S-N curve
 Smax = max(Sc);
 Smin = min(Sc); % fatigue limit
-CRS = linspace(Smin,Smax,500); % range for calculation
+CRS = linspace(Smin,Smax,nop); % range for calculation
 
 %% Fatigue life estimation
 % Expected damage rate
@@ -51,15 +53,19 @@ switch lower(pdf)
         sigmax = sqrt(m0);
         lambda0 = sqrt(m2/m0);
         gamma = lambda0/mu;
-        z = abs(CRS./ (2*sigmax));
+        z = abs(CRS./(2*sigmax));
         C1 = 2*(xm - gamma^2 )/ (1+gamma^2 );
         alpha = (gamma-xm-C1^2) / (1 - gamma - C1 + C1^2);
         C2 = (1 - gamma - C1 + C1^2)/(1 - alpha);
         C3 = 1 - C1 - C2;
         tau = 1.25*(gamma - C3 - C2*alpha)/ C1;
-        PDF = (C1/tau.*exp(-CRS/2/sigmax./tau) + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2) + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) );
-
-        Ed = mu.*trapz( CRS, PDF./NF);
+        %PDF = (C1/tau.*exp(-CRS/2/sigmax./tau) + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2) + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) );
+	PDF1 = C1/tau.*exp(-z/tau);
+	PDF2 = (C2*z/alpha^2).*exp(-(z.^2)./(2*alpha^2));
+	PDF3 = C3.*z.*exp(-(z.^2)./2);
+	PDF = (PDF1 + PDF2 + PDF3)./(2*sigmax);
+	integrand = PDF./NF;
+        Ed = mu.*trapz( CRS, integrand);
     case {'rayleigh'}
         % Rayleigh's PDF
         PDF = CRS./m0 .* exp(-CRS.^2./2./m0);
@@ -79,15 +85,20 @@ end
 %% Plot Graphs
 if showplots ~= 0
     % Plot single-sided amplitude spectrum.
-    subplot(2,1,1)
+    subplot(2,2,1)
     semilogy(f,PSD_1sided) 
     title('Single-Sided Amplitude Spectrum of S(t)'); xlabel('Frequency, Hz')
     ylabel('S(f)^2/f')
     
     % Plot S-N Diagram
-    subplot(2,2,3)
+    subplot(2,2,2)
     semilogx(N,S,'*-',N,Sc,N,Sc); xlabel('N, cycles'); ylabel('S, Pa')
     title('S-N Curve'); 
+
+    % Plot Different PDF's
+    subplot(2,2,3)
+    semilogy(CRS, NF)
+    title('N'); xlabel('\sigma, Pa'); ylabel('N')
 
     % Plot Different PDF's
     subplot(2,2,4)
@@ -98,5 +109,5 @@ end
 %% Expected Life
 Tf = 1/Ed;
 if showplots ~= 0
-    fprintf('\nVida: %.0f horas.\n',Tf/3600)
+    fprintf('\nVida: %.2f horas. Taxa de dano: %.3E\n',Tf/3600,Ed)
 end

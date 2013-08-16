@@ -6,6 +6,6 @@ LS = log10(S);
 LN = log10(N);
 LSi = log10(Si);
 
-P = polyfit(LS,LN,3);
+P = polyfit(LS,LN,2);
 LNi = polyval(P,LSi);
 Ni = 10.^LNi;

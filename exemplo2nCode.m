@@ -5,8 +5,12 @@
 load('dados_ex_2.mat');
 
 %% fatigue
-vida = spectrallife(psd,sn2,0,3,'dirlik',1)
-dano = 1/vida
+vida(1) = spectrallife(psd,sn1,0,3,'Dirlik',1);
+vida(2) = spectrallife(psd,sn2,0,3,'Dirlik',1);
+vida(3) = spectrallife(psd,sn3,0,3,'Dirlik',1);
+
+vidamedia = mean(vida,"h")
+dano = 1/vidamedia
 
 % RESULTADOS NCODE
 % dano = 4.454e-5
