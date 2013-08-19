@@ -1,0 +1,12 @@
+Ferramentas na Análise de Fadiga Estocástica em Estruturas Mecânicas
+
+Arquivos:
+
+spectrallife.m		estima vida de um ponto a partir do psd de tensões
+spectralfatigue.m	estima vida de um ponto a partir de um sinal temporal de tensões
+Ncycles.m		dada uma tabela representando a curva SN de um material, retorna o número de ciclos para falha para um valor de amplitude
+
+Exemplos:
+
+fatiguelifeexamples.m	time series examples
+exemplo2nCode.m		psd input example
