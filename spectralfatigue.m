@@ -60,17 +60,18 @@ switch lower(pdf)
         sigmax = sqrt(m0);
         lambda0 = sqrt(m2/m0);
         gamma = lambda0/mu;
-        z = abs(CRS./ (2*sigmax));
+        z = abs(CRS./(2*sigmax));
         C1 = 2*(xm - gamma^2 )/ (1+gamma^2 );
         alpha = (gamma-xm-C1^2) / (1 - gamma - C1 + C1^2);
         C2 = (1 - gamma - C1 + C1^2)/(1 - alpha);
         C3 = 1 - C1 - C2;
         tau = 1.25*(gamma - C3 - C2*alpha)/ C1;
-        PDF = C1/tau.*exp(-CRS/2/sigmax./tau);
-        PDF = PDF + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2);
-        PDF = PDF + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) ;
-
-        Ed = mu.*trapz( CRS, PDF./NF);
+        PDF1 = C1/tau.*exp(-z/tau);
+        PDF2 = (C2*z/alpha^2).*exp(-(z.^2)./(2*alpha^2));
+        PDF3 = C3.*z.*exp(-(z.^2)./2);
+        PDF = (PDF1 + PDF2 + PDF3)./(2*sigmax);
+        integrand = PDF./NF;
+        Ed = mu.*trapz( CRS, integrand);
     case {'rayleigh'}
         % Rayleigh's PDF
         PDF = CRS./m0 .* exp(-CRS.^2./2./m0);

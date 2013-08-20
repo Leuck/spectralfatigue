@@ -1,29 +1,31 @@
 % Fatigue life estimate - spectral method
+% psd should be of the form [frequency spectrum]
 % sn should be of the form [N S]
 % Ricardo Frederico Leuck Filho 2012/2-2013/1
 function Tf = spectrallife(psd,sn,meanstress,criteria,pdf,showplots)
 % %% Options
-% criteria = 2; % Mean stress correction (1=Goodman, 2=Gerber, 3=sem correcao)
-% showplots = 0; % Show plots? 0=no, 1=yes
+% meanstress: mean stress
+% criteria: Mean stress correction (1=Goodman, 2=Gerber, 3=no mean value correction)
+% pdf: Probability density function estimator, 'dirlik', 'gauss',
+% 'rayleigh' or 'narrow'.
+% showplots: Show plots? 0=no, 1=yes
 
-nop = 200; % number of points for calculations
-
-f = psd(:,1);
-PSD_1sided = psd(:,2);
+nop = 200;      % number of points for calculations
+f = psd(:,1);   % frequency
+PSD_1sided = psd(:,2);  % response stress psd at point of interest
 
 %% PSD moments
-frad=f;%*2*pi;
-% size(frad)
-m0 = trapz(frad, PSD_1sided);
-m1 = trapz(frad, frad .* PSD_1sided);
-m2 = trapz(frad, frad.^2 .* PSD_1sided);
-m4 = trapz(frad, frad.^4 .* PSD_1sided);
-%fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
-fprintf('\nRMS: %.4E\tIrr: %.4E\tPeaks: %.4E\n',sqrt(m0),sqrt((m2^2)/(m0*m4)),sqrt(m4/m2));
-
+m0 = trapz(f, PSD_1sided);
+m1 = trapz(f, f .* PSD_1sided);
+m2 = trapz(f, f.^2 .* PSD_1sided);
+m4 = trapz(f, f.^4 .* PSD_1sided);
+if showplots ~= 0
+    %fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
+    fprintf('\nRMS: %.4E\tIrr: %.4E\tPeaks: %.4E\n',sqrt(m0),sqrt((m2^2)/(m0*m4)),sqrt(m4/m2));
+end
 %% S-N curve with Mean Stress Correction
 N = sn(:,1);
-S = sn(:,2); clear sn;
+S = sn(:,2);
 
 Sm = meanstress;	% mean stress
 Su = max(S);
@@ -59,12 +61,11 @@ switch lower(pdf)
         C2 = (1 - gamma - C1 + C1^2)/(1 - alpha);
         C3 = 1 - C1 - C2;
         tau = 1.25*(gamma - C3 - C2*alpha)/ C1;
-        %PDF = (C1/tau.*exp(-CRS/2/sigmax./tau) + C2.*(CRS/2/sigmax)./alpha^2.*exp(-(CRS/2/sigmax).^2./2/alpha^2) + C3.*(CRS/2/sigmax).*exp(-(CRS/2/sigmax).^2./2) );
-	PDF1 = C1/tau.*exp(-z/tau);
-	PDF2 = (C2*z/alpha^2).*exp(-(z.^2)./(2*alpha^2));
-	PDF3 = C3.*z.*exp(-(z.^2)./2);
-	PDF = (PDF1 + PDF2 + PDF3)./(2*sigmax);
-	integrand = PDF./NF;
+        PDF1 = C1/tau.*exp(-z/tau);
+        PDF2 = (C2*z/alpha^2).*exp(-(z.^2)./(2*alpha^2));
+        PDF3 = C3.*z.*exp(-(z.^2)./2);
+        PDF = (PDF1 + PDF2 + PDF3)./(2*sigmax);
+        integrand = PDF./NF;
         Ed = mu.*trapz( CRS, integrand);
     case {'rayleigh'}
         % Rayleigh's PDF
