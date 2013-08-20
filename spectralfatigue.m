@@ -1,14 +1,18 @@
-% Fatigue life estimate - spectral method
+% Fatigue life estimate from stress signal - spectral method
 % time vector must be in sinal.t, signal must be in sinal.ext
 % sn should be of the form [N S]
 % Ricardo Frederico Leuck Filho 2012/2-2013/1
 function Tf = spectralfatigue(sinal,sn,criteria,pdf,showplots)
 % %% Options
-% criteria = 2; % Mean stress correction (1=Goodman, 2=Gerber, 3=sem correção)
-% showplots = 0; % Show plots? 0=no, 1=yes
+% criteria: Mean stress correction (1=Goodman, 2=Gerber, 3=no mean value correction)
+% pdf: Probability density function estimator, 'dirlik', 'gauss',
+% 'rayleigh' or 'narrow'.
+% showplots: Show plots? 0=no, 1=yes
+
+nop = 200;      % number of points for calculations
 
 %% Stress PSD
-Fs = inv(max(sinal.t)/length(sinal.t));	% Sampling frequency 1200; %
+Fs = inv(max(sinal.t)/length(sinal.t));	% Sampling frequency
 L = length(sinal.t);                    % Length of signal
 NFFT = 2^nextpow2(L); % Next power of 2 from length of y
 Y = fft(sinal.ext,NFFT)/L;
@@ -23,35 +27,43 @@ PSD_1sided = 2*abs(Y(1:NFFT/2+1));
 % PSD_1sided = sqrt(PSD_1sided).*(f+.0000000001);
 
 %% PSD moments
-frad=f*2*pi;
-% size(frad)
-m0 = trapz(frad, PSD_1sided);
-m1 = trapz(frad, frad .* PSD_1sided);
-m2 = trapz(frad, frad.^2 .* PSD_1sided);
-m4 = trapz(frad, frad.^4 .* PSD_1sided);
-%fprintf('\nm0 = %.4E\nm1 = %.4E\nm2 = %.4E\nm4 = %.4E',m0,m1,m2,m4);
-
+m0 = trapz(f, PSD_1sided);
+m1 = trapz(f, f .* PSD_1sided);
+m2 = trapz(f, f.^2 .* PSD_1sided);
+m4 = trapz(f, f.^4 .* PSD_1sided);
+if showplots ~= 0
+    %fprintf('\nMoments:\t%.4E\t%.4E\t%.4E\t%.4E\n',m0,m1,m2,m4);
+    fprintf('\nRMS: %.4E\tIrr: %.4E\tPeaks: %.4E\n',sqrt(m0),sqrt((m2^2)/(m0*m4)),sqrt(m4/m2));
+end
 %% S-N curve with Mean Stress Correction
 N = sn(:,1);
-S = sn(:,2); clear sn;
-%S = S/1e6;
-%S = S*6.895;
+S = sn(:,2);
 
 Sm = mean(sinal.ext);	% mean stress
-Su = 500;               % Ultimate tensile strength of SAE 1008
-Sc(:,3) = S;
-Sc(:,1) = S * (1-Sm/Su);        % Goodman
-Sc(:,2) = S * (1-(Sm/Su)^2);    % Gerber
-
+Su = max(S);
+if criteria == 1
+    Sc = S * (1-Sm/Su);        % Goodman
+    if showplots ~= 0
+        fprintf('\nMean Stress Correction: Goodman')
+    end
+elseif criteria == 2
+    Sc = S * (1-(Sm/Su)^2);    % Gerber
+    if showplots ~= 0
+        fprintf('\nMean Stress Correction: Gerber')
+    end
+else
+    Sc = S;
+end
 %% Stress Range
 % No extrapolation, the stress range is given by the S-N curve
-Smax = 360;%max(Sc(:,criteria));
-Smin = 70;%min(Sc(:,criteria)); % fatigue limit
-CRS = linspace(Smin,Smax,500); % range for calculation
+Smax = max(Sc);
+Smin = min(Sc); % fatigue limit
+CRS = linspace(Smin,Smax,nop); % range for calculation
 
 %% Fatigue life estimation
 % Expected damage rate
-NF=astm1008cycles(CRS);
+%NF=astm1008cycles(CRS);
+NF=Ncycles(N,S,CRS);
 switch lower(pdf)
     case {'dirlik'}
         % Dirlik's PDF
@@ -113,12 +125,7 @@ if showplots ~= 0
     title(strcat({pdf},' PDF')); xlabel('\sigma, MPa'); ylabel('P')
     
     % Plot the life curve
-    subplot(2,3,5)
-    plot(CRS, NF)
-    title('Life Curve'); xlabel('\sigma, Mpa'); ylabel('N')
-    
-    % Plot the life curve
-    subplot(2,3,6)
+    subplot(3,1,3)
     plot(CRS, NF, CRS, mu*PDF)
     title('integrands'); xlabel('\sigma, Mpa'); ylabel(''); legend('N','mu . PDF')
 end

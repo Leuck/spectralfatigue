@@ -11,7 +11,7 @@ teste2.ext=253.216/2*sin(2*pi*5*t);
 
 sn = csvread('1006SN.txt');
 pdf = 'dirlik'; % usar dirlik, rayleigh, gauss ou narrow
-showplots = 0; % =1 para mostrar gráficos
+showplots = 0; % =0 para _nao_ mostrar graficos
 
 %% Chamadas de funcao
 for criteria = [1 2 3]
