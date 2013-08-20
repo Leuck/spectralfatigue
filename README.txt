@@ -11,7 +11,8 @@ Exemplos:
 fatiguelifeexamples.m	time series examples
 exemplo2nCode.m		psd input example
 
---## Funcao spectralfatigue.m ##--
+###### Funcao spectralfatigue.m ######
+
 		T = spectralfatigue( sinal, sn, criteria, pdf, showplots)
 T:
 	Tempo estimado ate falha.
@@ -39,7 +40,8 @@ showplots:
 		showplots = 0	nao mostra graficos
 		showplots = 1	mostra graficos
 
---## Funcao spectrallife.m ##--
+###### Funcao spectrallife.m ######
+
 		T = spectrallife( psd, sn, meanstress, criteria, pdf, showplots)
 T:
 	Tempo estimado ate falha.
