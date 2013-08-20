@@ -1,4 +1,4 @@
-% Fatigue life estimate - spectral method
+% Fatigue life estimate from stress psd - spectral method
 % psd should be of the form [frequency spectrum]
 % sn should be of the form [N S]
 % Ricardo Frederico Leuck Filho 2012/2-2013/1
