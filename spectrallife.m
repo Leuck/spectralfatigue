@@ -104,7 +104,7 @@ if showplots ~= 0
     % Plot Different PDF's
     subplot(2,2,4)
     plot(CRS, PDF)
-    title(strcat({pdf},' PDF')); xlabel('\sigma, Pa'); ylabel('P')
+    title(strcat({pdf},'`s PDF')); xlabel('\sigma, Pa'); ylabel('P')
 end
 
 %% Expected Life
