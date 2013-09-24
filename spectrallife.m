@@ -2,7 +2,7 @@
 % psd should be of the form [frequency spectrum]
 % sn should be of the form [N S]
 % Ricardo Frederico Leuck Filho 2012/2-2013/1
-function Tf = spectrallife(psd,sn,meanstress,criteria,pdf,showplots)
+function Ed = spectrallife(psd,sn,meanstress,criteria,pdf,showplots)
 % %% Options
 % meanstress: mean stress
 % criteria: Mean stress correction (1=Goodman, 2=Gerber, 3=no mean value correction)
@@ -108,7 +108,7 @@ if showplots ~= 0
 end
 
 %% Expected Life
-Tf = 1/Ed;
 if showplots ~= 0
+    Tf = 1/Ed;
     fprintf('\nVida: %.2f horas. Taxa de dano: %.3E\n',Tf/3600,Ed)
 end
